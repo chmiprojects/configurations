@@ -8,10 +8,12 @@ def run_command(command):
         print(f"An error occurred while running the command: {e}")
 
 def main():
-    # Commands to change ownership and permissions of /dev/gpiomem
+    # Commands to update HDMI settings
     commands = [
-        "sudo chown root.gpio /dev/gpiomem",
-        "sudo chmod g+rw /dev/gpiomem"
+        "echo 'hdmi_force_hotplug=1' >> /boot/config.txt",
+        "echo 'hdmi_group=2' >> /boot/config.txt",
+        "echo 'hdmi_mode=51' >> /boot/config.txt",
+        "sudo reboot"
     ]
 
     for cmd in commands:
