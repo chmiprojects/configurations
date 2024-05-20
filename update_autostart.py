@@ -10,7 +10,7 @@ def run_command(command):
 def append_to_autostart():
     """Append a line to the autostart file."""
     autostart_file = "/etc/xdg/lxsession/LXDE-pi/autostart"
-    line_to_add = '@lxterminal --command="~/autostart.sh"'
+    line_to_add = '@lxterminal --command="~/autostart_program.sh"'
     
     try:
         with open(autostart_file, 'a') as file:
