@@ -1,0 +1,53 @@
+from ultralytics import YOLO
+import time
+model = YOLO("yolov8s-cls.pt")
+
+def classify_bottle(classes, probs):
+    glass_indicators = {
+        440: "Beer bottle",
+        901: "Whiskey jug",
+        907: "Wine bottle",
+        441: "Beer glass",  # Added beer glass
+        438: "Beaker"
+    }
+    plastic_indicators = {898: "Water bottle", 899: "Water jug"}
+   
+    # Get top 5 probabilities and their indices for better diagnosis
+    top_5_indices = sorted(range(len(probs)), key=lambda i: probs[i], reverse=True)[:5]
+   
+    water_bottle_prob = max(probs[898], probs[899])
+    max_glass_prob = max([probs[i] for i in glass_indicators], default=0)
+   
+
+   
+    if water_bottle_prob < max_glass_prob and water_bottle_prob < 0.5:
+        if probs[898] > probs[899]:
+            return f"PET bottle (Water bottle)", water_bottle_prob
+        else:
+            return f"PET bottle (Water jug)", water_bottle_prob
+   
+    # Check for glass containers
+    for idx in top_5_indices:
+        if idx in glass_indicators and probs[idx] > 0.1:
+            return f"Glass container ({glass_indicators[idx]})", probs[idx]
+   
+    # If no glass container with higher probability than water bottle, check for plastic bottles
+    for idx in top_5_indices:
+        if idx in plastic_indicators and probs[idx] > 0.1:
+            return f"PET bottle ({plastic_indicators[idx]})", probs[idx]
+   
+    return None, None
+
+while True:
+    results = model.predict(stream=True, show=True, source=0)
+    for result in results:
+        probs = result.probs.data.tolist()
+        classes = result.names
+       
+        container_type, score = classify_bottle(classes, probs)
+        if container_type:
+            print(f"Detected: {container_type} (Probability: {score:.4f})")
+            #time.sleep(2)
+        else:
+            print("No bottle or glass detected with sufficient confidence.")
+        print("-" * 50)  # Separator for readability
